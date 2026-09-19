@@ -9,6 +9,7 @@
 {
     CFMachPortRef eventTap;
     CFRunLoopSourceRef runLoopSource;
+    NSTimer *postTimer;
     double accumulatedDelta;
     double sensitivityDivider;
     BOOL invertDirection;

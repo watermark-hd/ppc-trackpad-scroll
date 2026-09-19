@@ -83,11 +83,33 @@ static CGEventRef ScrollEventTapCallback(CGEventTapProxy proxy, CGEventType type
 
     accumulatedDelta = 0.0;
 
+    // スクロールイベントの実際の送出(CGEventPost)は、このタイマーで
+    // 一定間隔(50Hz)にまとめて行う。タップのコールバック内で毎回
+    // CGEventCreate/CGEventPost を同期的に呼ぶと、実機で指を素早く動かした際に
+    // 非常に高頻度で呼ばれることになり、古いPowerPC実機ではWindowServerとの
+    // やり取りが詰まって画面全体がハングする恐れがあるため、コールバック側は
+    // 蓄積処理だけに留めている。
+    // NSRunLoopCommonModes は Leopard(10.5)以降の定数で Tiger の 10.4u SDK には
+    // 存在しないため、10.4 から使える Core Foundation 版の kCFRunLoopCommonModes
+    // を使ってタイマーを登録する（NSTimer は CFRunLoopTimerRef とトールフリーブリッジ）。
+    postTimer = [[NSTimer timerWithTimeInterval:0.02
+                                          target:self
+                                        selector:@selector(drainAccumulatedScroll)
+                                        userInfo:nil
+                                         repeats:YES] retain];
+    CFRunLoopAddTimer(CFRunLoopGetCurrent(), (CFRunLoopTimerRef)postTimer, kCFRunLoopCommonModes);
+
     return YES;
 }
 
 - (void)stop
 {
+    if (postTimer != nil) {
+        [postTimer invalidate];
+        [postTimer release];
+        postTimer = nil;
+    }
+
     if (eventTap == NULL) {
         return;
     }
@@ -137,45 +159,56 @@ static CGEventRef ScrollEventTapCallback(CGEventTapProxy proxy, CGEventType type
             scroll = -scroll;
         }
 
-        // 端数を蓄積し、小さい移動でも取りこぼさないようにする
+        // 端数を蓄積するだけに留める。実際の CGEventPost は
+        // drainAccumulatedScroll がタイマーで一定間隔にまとめて行う
+        // （コールバックを軽く保つため。詳細は start メソッドのコメント参照）。
         accumulatedDelta += scroll;
-        int32_t wheelDelta = (int32_t)accumulatedDelta;
-
-        // CGEventCreateScrollWheelEvent は 10.4u SDK に存在しないため、
-        // 汎用の CGEventCreate + CGEventSetType でスクロールホイールイベントを
-        // 手動で組み立てる。値は概ね -10〜+10 程度を想定しているため念のため
-        // クランプする。クランプは「送出用の値」にのみ適用し、accumulatedDelta
-        // からは実際に送出した分だけを差し引く。先に丸め値そのものを引いてしまうと、
-        // 高感度設定で素早くフリックした際に ±10 を超えた分がそのまま消失し、
-        // 速く動かすほどスクロールが効かなく感じる不具合になるため。
-        int32_t postedDelta = wheelDelta;
-        if (postedDelta > 10) {
-            postedDelta = 10;
-        } else if (postedDelta < -10) {
-            postedDelta = -10;
-        }
-        accumulatedDelta -= postedDelta;
-
-        // 重要: ⌘キーを押したままこのイベントを送出すると、送出イベントにも
-        // ⌘フラグが乗ってしまい、Safari/Firefox系ブラウザなどが「⌘+スクロール」
-        // を拡大縮小と解釈してしまう（実機で確認した不具合）。そのため
-        // CGEventSetFlags(event, 0) で明示的に修飾キーを取り除いてから送出する。
-        if (postedDelta != 0) {
-            CGEventRef scrollEvent = CGEventCreate(NULL);
-            if (scrollEvent != NULL) {
-                CGEventSetType(scrollEvent, kCGEventScrollWheel);
-                CGEventSetIntegerValueField(scrollEvent, kCGScrollWheelEventDeltaAxis1, postedDelta);
-                CGEventSetFlags(scrollEvent, 0);
-                CGEventPost(kCGHIDEventTap, scrollEvent);
-                CFRelease(scrollEvent);
-            }
-        }
 
         // ⌘押下中はカーソル移動そのものを常にキャンセルする
         return NULL;
     }
 
     return event;
+}
+
+- (void)drainAccumulatedScroll
+{
+    if (accumulatedDelta == 0.0) {
+        return;
+    }
+
+    // CGEventCreateScrollWheelEvent は 10.4u SDK に存在しないため、
+    // 汎用の CGEventCreate + CGEventSetType でスクロールホイールイベントを
+    // 手動で組み立てる。値は概ね -10〜+10 程度を想定しているため念のため
+    // クランプする。クランプは「送出用の値」にのみ適用し、accumulatedDelta
+    // からは実際に送出した分だけを差し引く。先に丸め値そのものを引いてしまうと、
+    // 高感度設定で素早くフリックした際に ±10 を超えた分がそのまま消失し、
+    // 速く動かすほどスクロールが効かなく感じる不具合になるため。
+    int32_t wheelDelta = (int32_t)accumulatedDelta;
+    int32_t postedDelta = wheelDelta;
+    if (postedDelta > 10) {
+        postedDelta = 10;
+    } else if (postedDelta < -10) {
+        postedDelta = -10;
+    }
+    accumulatedDelta -= postedDelta;
+
+    if (postedDelta == 0) {
+        return;
+    }
+
+    // 重要: ⌘キーを押したままこのイベントを送出すると、送出イベントにも
+    // ⌘フラグが乗ってしまい、Safari/Firefox系ブラウザなどが「⌘+スクロール」
+    // を拡大縮小と解釈してしまう（実機で確認した不具合）。そのため
+    // CGEventSetFlags(event, 0) で明示的に修飾キーを取り除いてから送出する。
+    CGEventRef scrollEvent = CGEventCreate(NULL);
+    if (scrollEvent != NULL) {
+        CGEventSetType(scrollEvent, kCGEventScrollWheel);
+        CGEventSetIntegerValueField(scrollEvent, kCGScrollWheelEventDeltaAxis1, postedDelta);
+        CGEventSetFlags(scrollEvent, 0);
+        CGEventPost(kCGHIDEventTap, scrollEvent);
+        CFRelease(scrollEvent);
+    }
 }
 
 - (void)dealloc
