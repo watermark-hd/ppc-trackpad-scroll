@@ -60,6 +60,12 @@ Aquafoxなど Gecko 系ブラウザには、`⌘＋ホイール＝ページ拡�
 
 これで⌘（または割り当てたキー）＋トラックパッドでも正常にスクロールするようになります。
 
+### DoubleCommand等でキーを⌘に割り当てている場合
+
+DoubleCommandなどのキー入れ替えツールで、Enterキーなど本来⌘ではないキーを⌘として動作させている場合、実機（PowerBook G4で確認）でのスクロール反応がやや鈍く、粘り強く動かさないと反応しないことがあります。これはキー入れ替えツール側が⌘の修飾フラグを断続的にしか送出できていないことが原因と見られます。当アプリ側では猶予期間（0.8秒、⌘フラグが一瞬途切れても押され続けているものとして扱う）を設けて可能な範囲で吸収していますが、完全には解消できません。本物の⌘キーではこの問題は発生しません。
+
+なお、同じ状況でもiBook G4では特にスムーズに動作しており、この反応の鈍さは確認できていません。原因ははっきりしませんが、機種やキーボードハードウェアによって挙動が異なる可能性があります。
+
 ### ビルド方法
 
 Xcode（xcodebuild）ではなく `gcc` を直接使う `Makefile` でビルドします。10.4u SDK が入った環境（実機のPowerPC Mac、Tiger/Leopard）を想定しています。
@@ -135,6 +141,12 @@ To fix it, open `about:config` in Aquafox's address bar and set the following to
 - `mousewheel.with_control.action` (if needed)
 
 This makes scrolling work correctly with ⌘ (or whichever key you've mapped) + trackpad.
+
+### Note for DoubleCommand / key-remapping tool users
+
+If you use a key-remapping tool like DoubleCommand to make a non-modifier key (e.g. Enter) act as ⌘, scrolling may feel less responsive on some machines (observed on a PowerBook G4) — you may need to keep moving the trackpad persistently for it to register. This appears to be caused by the remapping tool asserting the ⌘ modifier flag only intermittently rather than continuously. The app includes a grace period (0.8s, treating a brief ⌘-flag dropout as still-held) to absorb some of this, but it doesn't fully eliminate the issue. A real physical ⌘ key doesn't have this problem.
+
+Interestingly, this hasn't been observed on an iBook G4 — scrolling there feels smooth even with DoubleCommand active. The reason isn't clear; it may depend on the specific machine or keyboard hardware.
 
 ### Building
 
