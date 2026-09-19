@@ -13,6 +13,7 @@
     double accumulatedDelta;
     double sensitivityDivider;
     BOOL invertDirection;
+    CFAbsoluteTime lastCommandDownTime;
 }
 
 // イベントタップを開始する。Universal Access が無効な場合などは NO を返す。

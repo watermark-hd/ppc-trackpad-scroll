@@ -1,5 +1,12 @@
 #import "ScrollEventTap.h"
 
+// DoubleCommand等の修飾キー入れ替えユーティリティは、⌘フラグの立て方が
+// 瞬間的に不安定になることがある（実機で確認）。1回でもフラグが
+// 途切れるとジェスチャーが打ち切られてしまうと「粘り強く動かさないと
+// 効かない」体感になるため、直近このミリ秒以内に⌘が見えていれば
+// まだ押され続けているものとして扱う猶予期間を設ける。
+static const CFTimeInterval kCommandGracePeriod = 0.12;
+
 static CGEventRef ScrollEventTapCallback(CGEventTapProxy proxy, CGEventType type, CGEventRef event, void *refcon);
 
 @implementation ScrollEventTap
@@ -11,6 +18,7 @@ static CGEventRef ScrollEventTapCallback(CGEventTapProxy proxy, CGEventType type
         eventTap = NULL;
         runLoopSource = NULL;
         accumulatedDelta = 0.0;
+        lastCommandDownTime = 0.0;
 
         // AppDelegate が registerDefaults: を済ませた後に生成される前提のため、
         // ここで一度だけ読み込んでおけば以降はイベントコールバック内で
@@ -144,10 +152,21 @@ static CGEventRef ScrollEventTapCallback(CGEventTapProxy proxy, CGEventType type
     if (type == kCGEventMouseMoved) {
         CGEventFlags flags = CGEventGetFlags(event);
         BOOL commandDown = (flags & kCGEventFlagMaskCommand) != 0;
+        CFAbsoluteTime now = CFAbsoluteTimeGetCurrent();
 
-        if (!commandDown) {
-            accumulatedDelta = 0.0;
-            return event;
+        if (commandDown) {
+            lastCommandDownTime = now;
+        } else {
+            // 直近 kCommandGracePeriod 以内に⌘が押されていたなら、
+            // 今回のイベントでのフラグ欠落は DoubleCommand 等の瞬間的な
+            // 取りこぼしとみなし、ジェスチャーを継続扱いにする。
+            BOOL withinGrace = (lastCommandDownTime != 0.0) &&
+                                ((now - lastCommandDownTime) < kCommandGracePeriod);
+            if (!withinGrace) {
+                accumulatedDelta = 0.0;
+                lastCommandDownTime = 0.0;
+                return event;
+            }
         }
 
         int64_t deltaY = CGEventGetIntegerValueField(event, kCGMouseEventDeltaY);
