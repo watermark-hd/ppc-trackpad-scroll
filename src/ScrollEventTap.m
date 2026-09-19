@@ -7,8 +7,11 @@
 // 変更しても改善しなかったため、ツール側の内部タイミングに起因すると見られる）。
 // 途切れのたびにジェスチャーを打ち切ると実用に耐えないため、猶予期間を長めに
 // 取って吸収する。本物の⌘キーを離した際もこの時間だけ通常のカーソル操作への
-// 復帰が遅れるトレードオフがあるが、ユーザーの実機検証の結果この設定を採用した。
-static const CFTimeInterval kCommandGracePeriod = 0.8;
+// 復帰が遅れるトレードオフがあるが、Tiger/Leopardではフォーカスの無い背面
+// ウィンドウはスクロールできない（Mシリーズ以降のmacOSのような背面スクロール
+// 機能が無い）ため、1秒程度の遅延は実用上問題にならないというユーザーの
+// 実機検証の判断により採用した。
+static const CFTimeInterval kCommandGracePeriod = 1.0;
 
 static CGEventRef ScrollEventTapCallback(CGEventTapProxy proxy, CGEventType type, CGEventRef event, void *refcon);
 
