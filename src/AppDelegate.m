@@ -2,10 +2,6 @@
 #import "ScrollEventTap.h"
 #import "SettingsWindowController.h"
 
-// gcc 4.0.1 (Tiger付属) は @"..." リテラル中のUTF-8日本語を正しく扱えず
-// 文字化けするため、C文字列からUTF-8として明示的にデコードする。
-#define J(cstr) [NSString stringWithUTF8String:(cstr)]
-
 @implementation AppDelegate
 
 - (void)applicationDidFinishLaunching:(NSNotification *)notification
@@ -26,15 +22,15 @@
 
     NSMenu *menu = [[NSMenu alloc] initWithTitle:@""];
 
-    NSMenuItem *settingsItem = [menu addItemWithTitle:J("設定...") action:@selector(showSettings:) keyEquivalent:@""];
+    NSMenuItem *settingsItem = [menu addItemWithTitle:NSLocalizedString(@"menu.settings", nil) action:@selector(showSettings:) keyEquivalent:@""];
     [settingsItem setTarget:self];
 
-    NSMenuItem *accessibilityItem = [menu addItemWithTitle:J("アクセシビリティ環境設定を開く") action:@selector(openAccessibilityPreferences:) keyEquivalent:@""];
+    NSMenuItem *accessibilityItem = [menu addItemWithTitle:NSLocalizedString(@"menu.open_accessibility_prefs", nil) action:@selector(openAccessibilityPreferences:) keyEquivalent:@""];
     [accessibilityItem setTarget:self];
 
     [menu addItem:[NSMenuItem separatorItem]];
 
-    NSMenuItem *quitItem = [menu addItemWithTitle:J("終了") action:@selector(quit:) keyEquivalent:@"q"];
+    NSMenuItem *quitItem = [menu addItemWithTitle:NSLocalizedString(@"menu.quit", nil) action:@selector(quit:) keyEquivalent:@"q"];
     [quitItem setTarget:self];
 
     [statusItem setMenu:menu];
@@ -52,18 +48,18 @@
             [accessibilityRetryTimer invalidate];
             accessibilityRetryTimer = nil;
         }
-        NSLog(@"%@", J("PPCTrackpad: イベントタップを開始しました"));
+        NSLog(@"%@", NSLocalizedString(@"log.tap_started", nil));
         return;
     }
 
-    NSLog(@"%@", J("PPCTrackpad: アクセシビリティ権限がないためイベントタップを開始できません"));
+    NSLog(@"%@", NSLocalizedString(@"log.tap_failed", nil));
 
     if (accessibilityRetryTimer == nil) {
         int result = NSRunAlertPanel(
-            J("アクセシビリティ権限が必要です"),
-            J("「システム環境設定 > Universal Access」で「補助装置にアクセスできるようにする」を有効にしてください。有効化後、自動的に再試行します。"),
-            J("環境設定を開く"),
-            J("後で"),
+            NSLocalizedString(@"alert.accessibility_required.title", nil),
+            NSLocalizedString(@"alert.accessibility_required.message", nil),
+            NSLocalizedString(@"alert.button.open_prefs", nil),
+            NSLocalizedString(@"alert.button.later", nil),
             nil
         );
 

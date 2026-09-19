@@ -16,6 +16,7 @@ CFLAGS     = -arch $(ARCH) -isysroot $(SDKROOT) -mmacosx-version-min=10.4 -Wall 
 FRAMEWORKS = -framework Cocoa -framework ApplicationServices
 
 SRC = src/main.m src/AppDelegate.m src/ScrollEventTap.m src/SettingsWindowController.m
+LPROJS = ja.lproj en.lproj
 
 .PHONY: all clean debug run
 
@@ -25,6 +26,10 @@ $(APP_BUNDLE): $(SRC) Resources/Info.plist
 	mkdir -p $(MACOS_DIR) $(RESOURCES)
 	$(CC) $(CFLAGS) -o $(EXECUTABLE) $(SRC) $(FRAMEWORKS)
 	cp Resources/Info.plist $(CONTENTS)/Info.plist
+	for d in $(LPROJS); do \
+		mkdir -p $(RESOURCES)/$$d; \
+		cp Resources/$$d/Localizable.strings $(RESOURCES)/$$d/Localizable.strings; \
+	done
 
 # メニューバー常駐アプリを直接フォアグラウンドで実行し、NSLog を端末に出す（動作確認用）
 debug: all

@@ -1,0 +1,21 @@
+/* Menu */
+"menu.settings" = "Settings...";
+"menu.open_accessibility_prefs" = "Open Accessibility Preferences";
+"menu.quit" = "Quit";
+
+/* Log */
+"log.tap_started" = "PPCTrackpad: event tap started";
+"log.tap_failed" = "PPCTrackpad: could not start event tap (accessibility not enabled)";
+
+/* Accessibility permission alert */
+"alert.accessibility_required.title" = "Accessibility Access Required";
+"alert.accessibility_required.message" = "Please enable \"Allow access for assistive devices\" in System Preferences > Universal Access. This app will automatically retry once it's enabled.";
+"alert.button.open_prefs" = "Open Preferences";
+"alert.button.later" = "Later";
+
+/* Settings window */
+"settings.window_title" = "PPC Trackpad Settings";
+"settings.sensitivity_label" = "Scroll Sensitivity";
+"settings.invert_checkbox" = "Invert scroll direction (natural style)";
+"settings.accessibility_enabled" = "Status: Accessibility Enabled";
+"settings.accessibility_disabled" = "Status: Accessibility Disabled (setup required)";

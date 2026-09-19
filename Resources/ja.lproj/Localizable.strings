@@ -1,0 +1,21 @@
+/* メニュー */
+"menu.settings" = "設定...";
+"menu.open_accessibility_prefs" = "アクセシビリティ環境設定を開く";
+"menu.quit" = "終了";
+
+/* ログ */
+"log.tap_started" = "PPCTrackpad: イベントタップを開始しました";
+"log.tap_failed" = "PPCTrackpad: アクセシビリティ権限がないためイベントタップを開始できません";
+
+/* アクセシビリティ権限のアラート */
+"alert.accessibility_required.title" = "アクセシビリティ権限が必要です";
+"alert.accessibility_required.message" = "「システム環境設定 > Universal Access」で「補助装置にアクセスできるようにする」を有効にしてください。有効化後、自動的に再試行します。";
+"alert.button.open_prefs" = "環境設定を開く";
+"alert.button.later" = "後で";
+
+/* 設定ウィンドウ */
+"settings.window_title" = "PPC Trackpad 設定";
+"settings.sensitivity_label" = "スクロール感度";
+"settings.invert_checkbox" = "スクロール方向を反転する（ナチュラル風）";
+"settings.accessibility_enabled" = "状態: アクセシビリティ 有効";
+"settings.accessibility_disabled" = "状態: アクセシビリティ 無効（要設定）";

@@ -1,20 +1,16 @@
 #import "SettingsWindowController.h"
 #import "ScrollEventTap.h"
 
-// gcc 4.0.1 (Tiger付属) は @"..." リテラル中のUTF-8日本語を正しく扱えず
-// 文字化けするため、C文字列からUTF-8として明示的にデコードする。
-#define J(cstr) [NSString stringWithUTF8String:(cstr)]
-
 @implementation SettingsWindowController
 
 - (id)initWithScrollTap:(ScrollEventTap *)tap
 {
-    NSRect frame = NSMakeRect(0, 0, 320, 170);
+    NSRect frame = NSMakeRect(0, 0, 380, 170);
     NSWindow *window = [[NSWindow alloc] initWithContentRect:frame
                                                     styleMask:(NSTitledWindowMask | NSClosableWindowMask)
                                                       backing:NSBackingStoreBuffered
                                                         defer:NO];
-    [window setTitle:J("PPC Trackpad 設定")];
+    [window setTitle:NSLocalizedString(@"settings.window_title", nil)];
     [window setReleasedWhenClosed:NO];
     [window center];
 
@@ -44,7 +40,8 @@
 {
     NSView *content = [[self window] contentView];
 
-    NSTextField *sensLabel = [self makeLabelWithFrame:NSMakeRect(20, 130, 90, 20) title:J("スクロール感度")];
+    // 英語("Scroll Sensitivity"等)でもラベルが収まるよう、日本語版より少し広めにレイアウトしている。
+    NSTextField *sensLabel = [self makeLabelWithFrame:NSMakeRect(20, 130, 130, 20) title:NSLocalizedString(@"settings.sensitivity_label", nil)];
     [content addSubview:sensLabel];
 
     double currentSensitivity = 4.0;
@@ -53,7 +50,7 @@
         currentSensitivity = [storedSensitivity doubleValue];
     }
 
-    sensitivitySlider = [[NSSlider alloc] initWithFrame:NSMakeRect(115, 130, 185, 20)];
+    sensitivitySlider = [[NSSlider alloc] initWithFrame:NSMakeRect(155, 130, 205, 20)];
     // 除数が小さいほど高感度。スライダーは 1(高感度)〜10(低感度) の範囲とする。
     [sensitivitySlider setMinValue:1.0];
     [sensitivitySlider setMaxValue:10.0];
@@ -64,19 +61,19 @@
 
     BOOL currentInvert = [[NSUserDefaults standardUserDefaults] boolForKey:@"InvertScrollDirection"];
 
-    invertCheckbox = [[NSButton alloc] initWithFrame:NSMakeRect(20, 95, 280, 24)];
+    invertCheckbox = [[NSButton alloc] initWithFrame:NSMakeRect(20, 95, 340, 24)];
     [invertCheckbox setButtonType:NSSwitchButton];
-    [invertCheckbox setTitle:J("スクロール方向を反転する（ナチュラル風）")];
+    [invertCheckbox setTitle:NSLocalizedString(@"settings.invert_checkbox", nil)];
     [invertCheckbox setState:(currentInvert ? NSOnState : NSOffState)];
     [invertCheckbox setTarget:self];
     [invertCheckbox setAction:@selector(invertChanged:)];
     [content addSubview:invertCheckbox];
 
-    statusLabel = [self makeLabelWithFrame:NSMakeRect(20, 58, 280, 20) title:@""];
+    statusLabel = [self makeLabelWithFrame:NSMakeRect(20, 58, 340, 20) title:@""];
     [content addSubview:statusLabel];
 
-    NSButton *accessibilityButton = [[NSButton alloc] initWithFrame:NSMakeRect(20, 20, 220, 26)];
-    [accessibilityButton setTitle:J("アクセシビリティ環境設定を開く")];
+    NSButton *accessibilityButton = [[NSButton alloc] initWithFrame:NSMakeRect(20, 20, 280, 26)];
+    [accessibilityButton setTitle:NSLocalizedString(@"menu.open_accessibility_prefs", nil)];
     [accessibilityButton setBezelStyle:NSRoundedBezelStyle];
     [accessibilityButton setTarget:self];
     [accessibilityButton setAction:@selector(openAccessibilityPreferences:)];
@@ -108,9 +105,9 @@
 {
     Boolean trusted = AXAPIEnabled();
     if (trusted) {
-        [statusLabel setStringValue:J("状態: アクセシビリティ 有効")];
+        [statusLabel setStringValue:NSLocalizedString(@"settings.accessibility_enabled", nil)];
     } else {
-        [statusLabel setStringValue:J("状態: アクセシビリティ 無効（要設定）")];
+        [statusLabel setStringValue:NSLocalizedString(@"settings.accessibility_disabled", nil)];
     }
 }
 

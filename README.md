@@ -28,6 +28,10 @@ It runs as a menu-bar item (no Dock icon), detecting ⌘+trackpad movement and c
 
 アプリはOS標準フレームワークのみに依存しているため、フォルダを移動しても問題なく動作します（zip単体で配布・実行可能）。
 
+### 言語について
+
+日本語 / 英語に対応しています。切り替えボタンはなく、**Mac本体の使用言語設定（システム環境設定 > International / 言語環境）に応じて自動的に切り替わります**。それ以外の言語環境では英語で表示されます。
+
 ### 使い方
 
 - ⌘キーを押しながらトラックパッドを上下に動かす → スクロール
@@ -96,6 +100,11 @@ MIT License. `LICENSE` ファイルを参照してください。
 
 The app links only against standard OS frameworks, so moving the folder around does not break it —
 it's safe to distribute and run as a standalone zip.
+
+### Language
+
+Available in Japanese and English. There's no in-app switch — **it automatically follows the Mac's
+system language setting** (System Preferences > International). Any other system language falls back to English.
 
 ### Usage
 
