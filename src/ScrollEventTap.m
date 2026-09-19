@@ -1,11 +1,14 @@
 #import "ScrollEventTap.h"
 
-// DoubleCommand等の修飾キー入れ替えユーティリティは、⌘フラグの立て方が
-// 瞬間的に不安定になることがある（実機で確認）。1回でもフラグが
-// 途切れるとジェスチャーが打ち切られてしまうと「粘り強く動かさないと
-// 効かない」体感になるため、直近このミリ秒以内に⌘が見えていれば
-// まだ押され続けているものとして扱う猶予期間を設ける。
-static const CFTimeInterval kCommandGracePeriod = 0.12;
+// DoubleCommand等の修飾キー入れ替えユーティリティ（特に通常キーをキーリピートで
+// 修飾キーへ変換するタイプ）は、⌘フラグの立ち方が数百ミリ秒〜数秒単位で
+// 断続的に途切れることが実機検証で判明している（PowerBook G4 + DoubleCommand
+// の "Enter Key acts as Command Key" で確認、OS側のキーリピート速度設定を
+// 変更しても改善しなかったため、ツール側の内部タイミングに起因すると見られる）。
+// 途切れのたびにジェスチャーを打ち切ると実用に耐えないため、猶予期間を長めに
+// 取って吸収する。本物の⌘キーを離した際もこの時間だけ通常のカーソル操作への
+// 復帰が遅れるトレードオフがあるが、ユーザーの実機検証の結果この設定を採用した。
+static const CFTimeInterval kCommandGracePeriod = 0.8;
 
 static CGEventRef ScrollEventTapCallback(CGEventTapProxy proxy, CGEventType type, CGEventRef event, void *refcon);
 
