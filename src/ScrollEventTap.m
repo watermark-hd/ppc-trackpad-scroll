@@ -9,9 +9,10 @@
 // 取って吸収する。本物の⌘キーを離した際もこの時間だけ通常のカーソル操作への
 // 復帰が遅れるトレードオフがあるが、Tiger/Leopardではフォーカスの無い背面
 // ウィンドウはスクロールできない（Mシリーズ以降のmacOSのような背面スクロール
-// 機能が無い）ため、1秒程度の遅延は実用上問題にならないというユーザーの
-// 実機検証の判断により採用した。
-static const CFTimeInterval kCommandGracePeriod = 1.0;
+// 機能が無い）ため、コンマ数秒程度の遅延は実用上問題にならないというユーザーの
+// 実機検証の判断により採用した（1.0秒でも0.8秒でも体感差が無かったため、
+// より遅延の少ない0.8秒を採用）。
+static const CFTimeInterval kCommandGracePeriod = 0.8;
 
 static CGEventRef ScrollEventTapCallback(CGEventTapProxy proxy, CGEventType type, CGEventRef event, void *refcon);
 
