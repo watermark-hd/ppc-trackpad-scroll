@@ -10,6 +10,8 @@
     CFMachPortRef eventTap;
     CFRunLoopSourceRef runLoopSource;
     double accumulatedDelta;
+    double sensitivityDivider;
+    BOOL invertDirection;
 }
 
 // イベントタップを開始する。Universal Access が無効な場合などは NO を返す。
@@ -19,5 +21,10 @@
 - (void)stop;
 
 - (BOOL)isRunning;
+
+// 設定変更を即座に反映する（イベントコールバック内で毎回 NSUserDefaults を
+// 読みに行かずに済むよう、値はイベントタップ側で保持しておく）。
+- (void)setSensitivityDivider:(double)divider;
+- (void)setInvertDirection:(BOOL)invert;
 
 @end

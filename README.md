@@ -22,7 +22,7 @@ It runs as a menu-bar item (no Dock icon), detecting ⌘+trackpad movement and c
 
 ### インストール
 
-1. `PPCTrackpad.app` を好きな場所（アプリケーションフォルダなど）に置く
+1. `PPC Trackpad Scroll.app` を好きな場所（アプリケーションフォルダなど）に置く
 2. ダブルクリックで起動（メニューバーに `TP` と表示されます）
 3. Universal Access が無効な場合はダイアログの案内に従って有効化する
 
@@ -65,7 +65,7 @@ Aquafoxなど Gecko 系ブラウザには、`⌘＋ホイール＝ページ拡�
 Xcode（xcodebuild）ではなく `gcc` を直接使う `Makefile` でビルドします。10.4u SDK が入った環境（実機のPowerPC Mac、Tiger/Leopard）を想定しています。
 
 ```sh
-make        # PPCTrackpad.app をビルド
+make        # PPC Trackpad Scroll.app をビルド
 make debug  # フォアグラウンドで実行し、ログを確認しながらテスト
 make run    # open でアプリを起動
 make clean  # ビルド成果物を削除
@@ -75,6 +75,7 @@ make clean  # ビルド成果物を削除
 
 - PowerPC専用ビルドです（Intel Macでは動作しません）
 - スクロール量は感度設定と実際のトラックパッドの移動量に依存するため、機種や個人の操作感に応じて調整が必要な場合があります
+- トラックパッドと外付けマウスを区別していないため、外付けマウスを接続している環境でも ⌘＋マウス移動でスクロールに変換されます（トラックパッドを持たないデスクトップ機で意図せず発動する場合があります）
 - 動作確認は iBook G4 / Mac OS X 10.4.11 で行っています
 
 ### ライセンス
@@ -94,7 +95,7 @@ MIT License. `LICENSE` ファイルを参照してください。
 
 ### Installation
 
-1. Put `PPCTrackpad.app` anywhere you like (e.g. the Applications folder)
+1. Put `PPC Trackpad Scroll.app` anywhere you like (e.g. the Applications folder)
 2. Double-click to launch (a `TP` label appears in the menu bar)
 3. If Universal Access is disabled, follow the dialog to enable it
 
@@ -141,7 +142,7 @@ This builds with a plain `gcc`-based `Makefile`, not `xcodebuild`. It assumes an
 10.4u SDK (i.e. a real PowerPC Mac running Tiger or Leopard).
 
 ```sh
-make        # build PPCTrackpad.app
+make        # build PPC Trackpad Scroll.app
 make debug  # run in the foreground so you can watch the log output
 make run    # launch the app with `open`
 make clean  # remove build artifacts
@@ -151,6 +152,7 @@ make clean  # remove build artifacts
 
 - PowerPC-only build (won't run on Intel Macs)
 - Scroll amount depends on the sensitivity setting and actual trackpad movement, so it may need tuning per machine/preference
+- The app doesn't distinguish a trackpad from an external mouse, so ⌘+mouse-movement is converted to scrolling too — this can trigger unintentionally on desktop Macs with no trackpad
 - Tested on an iBook G4 / Mac OS X 10.4.11
 
 ### License

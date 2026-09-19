@@ -10,7 +10,9 @@
 		<string>ja</string>
 	</array>
 	<key>CFBundleExecutable</key>
-	<string>PPCTrackpad</string>
+	<string>PPCTrackpadScroll</string>
+	<key>CFBundleIconFile</key>
+	<string>AppIcon</string>
 	<key>CFBundleIdentifier</key>
 	<string>com.watermark.ppctrackpad</string>
 	<key>CFBundleInfoDictionaryVersion</key>
@@ -22,9 +24,9 @@
 	<key>CFBundleSignature</key>
 	<string>PPCT</string>
 	<key>CFBundleShortVersionString</key>
-	<string>0.2</string>
+	<string>0.3</string>
 	<key>CFBundleVersion</key>
-	<string>0.2</string>
+	<string>0.3</string>
 	<key>LSMinimumSystemVersion</key>
 	<string>10.4.0</string>
 	<key>LSUIElement</key>

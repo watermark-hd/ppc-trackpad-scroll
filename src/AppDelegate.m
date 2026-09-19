@@ -100,6 +100,7 @@
     [scrollTap stop];
     [scrollTap release];
     [settingsWindowController release];
+    [[NSStatusBar systemStatusBar] removeStatusItem:statusItem];
     [statusItem release];
     [super dealloc];
 }

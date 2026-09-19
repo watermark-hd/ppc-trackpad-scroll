@@ -87,12 +87,19 @@
 {
     double value = [sensitivitySlider doubleValue];
     [[NSUserDefaults standardUserDefaults] setObject:[NSNumber numberWithDouble:value] forKey:@"ScrollSensitivityDivider"];
+    // LSUIElement の常駐アプリは強制終了されることもあるため、変更を即座にディスクへ反映する。
+    [[NSUserDefaults standardUserDefaults] synchronize];
+    // イベントタップ側は起動時に読み込んだ値をキャッシュして使っているため、
+    // 変更をその場で反映させる。
+    [scrollTap setSensitivityDivider:value];
 }
 
 - (void)invertChanged:(id)sender
 {
     BOOL invert = ([invertCheckbox state] == NSOnState);
     [[NSUserDefaults standardUserDefaults] setBool:invert forKey:@"InvertScrollDirection"];
+    [[NSUserDefaults standardUserDefaults] synchronize];
+    [scrollTap setInvertDirection:invert];
 }
 
 - (void)openAccessibilityPreferences:(id)sender

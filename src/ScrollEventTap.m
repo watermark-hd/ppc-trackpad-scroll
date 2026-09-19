@@ -11,6 +11,16 @@ static CGEventRef ScrollEventTapCallback(CGEventTapProxy proxy, CGEventType type
         eventTap = NULL;
         runLoopSource = NULL;
         accumulatedDelta = 0.0;
+
+        // AppDelegate が registerDefaults: を済ませた後に生成される前提のため、
+        // ここで一度だけ読み込んでおけば以降はイベントコールバック内で
+        // NSUserDefaults を毎回引く必要がない。
+        NSNumber *sensitivityNumber = [[NSUserDefaults standardUserDefaults] objectForKey:@"ScrollSensitivityDivider"];
+        sensitivityDivider = (sensitivityNumber != nil) ? [sensitivityNumber doubleValue] : 4.0;
+        if (sensitivityDivider <= 0.0) {
+            sensitivityDivider = 4.0;
+        }
+        invertDirection = [[NSUserDefaults standardUserDefaults] boolForKey:@"InvertScrollDirection"];
     }
     return self;
 }
@@ -18,6 +28,18 @@ static CGEventRef ScrollEventTapCallback(CGEventTapProxy proxy, CGEventType type
 - (BOOL)isRunning
 {
     return (eventTap != NULL);
+}
+
+- (void)setSensitivityDivider:(double)divider
+{
+    if (divider > 0.0) {
+        sensitivityDivider = divider;
+    }
+}
+
+- (void)setInvertDirection:(BOOL)invert
+{
+    invertDirection = invert;
 }
 
 - (BOOL)start
@@ -106,48 +128,47 @@ static CGEventRef ScrollEventTapCallback(CGEventTapProxy proxy, CGEventType type
             return event;
         }
 
-        NSNumber *sensitivityNumber = [[NSUserDefaults standardUserDefaults] objectForKey:@"ScrollSensitivityDivider"];
-        double sensitivityDivider = (sensitivityNumber != nil) ? [sensitivityNumber doubleValue] : 4.0;
-        if (sensitivityDivider <= 0.0) {
-            sensitivityDivider = 4.0;
-        }
-        BOOL invert = [[NSUserDefaults standardUserDefaults] boolForKey:@"InvertScrollDirection"];
-
         int64_t deltaY = CGEventGetIntegerValueField(event, kCGMouseEventDeltaY);
 
         // 指を上に動かす(deltaY < 0)と上方向にスクロールするのを「通常」とする。
         // 「反転」設定が有効な場合は符号を入れ替える。
         double scroll = (double)(-deltaY) / sensitivityDivider;
-        if (invert) {
+        if (invertDirection) {
             scroll = -scroll;
         }
 
         // 端数を蓄積し、小さい移動でも取りこぼさないようにする
         accumulatedDelta += scroll;
         int32_t wheelDelta = (int32_t)accumulatedDelta;
-        accumulatedDelta -= wheelDelta;
 
         // CGEventCreateScrollWheelEvent は 10.4u SDK に存在しないため、
         // 汎用の CGEventCreate + CGEventSetType でスクロールホイールイベントを
         // 手動で組み立てる。値は概ね -10〜+10 程度を想定しているため念のため
-        // クランプしておく。
-        //
+        // クランプする。クランプは「送出用の値」にのみ適用し、accumulatedDelta
+        // からは実際に送出した分だけを差し引く。先に丸め値そのものを引いてしまうと、
+        // 高感度設定で素早くフリックした際に ±10 を超えた分がそのまま消失し、
+        // 速く動かすほどスクロールが効かなく感じる不具合になるため。
+        int32_t postedDelta = wheelDelta;
+        if (postedDelta > 10) {
+            postedDelta = 10;
+        } else if (postedDelta < -10) {
+            postedDelta = -10;
+        }
+        accumulatedDelta -= postedDelta;
+
         // 重要: ⌘キーを押したままこのイベントを送出すると、送出イベントにも
         // ⌘フラグが乗ってしまい、Safari/Firefox系ブラウザなどが「⌘+スクロール」
         // を拡大縮小と解釈してしまう（実機で確認した不具合）。そのため
         // CGEventSetFlags(event, 0) で明示的に修飾キーを取り除いてから送出する。
-        if (wheelDelta != 0) {
-            if (wheelDelta > 10) {
-                wheelDelta = 10;
-            } else if (wheelDelta < -10) {
-                wheelDelta = -10;
-            }
+        if (postedDelta != 0) {
             CGEventRef scrollEvent = CGEventCreate(NULL);
-            CGEventSetType(scrollEvent, kCGEventScrollWheel);
-            CGEventSetIntegerValueField(scrollEvent, kCGScrollWheelEventDeltaAxis1, wheelDelta);
-            CGEventSetFlags(scrollEvent, 0);
-            CGEventPost(kCGHIDEventTap, scrollEvent);
-            CFRelease(scrollEvent);
+            if (scrollEvent != NULL) {
+                CGEventSetType(scrollEvent, kCGEventScrollWheel);
+                CGEventSetIntegerValueField(scrollEvent, kCGScrollWheelEventDeltaAxis1, postedDelta);
+                CGEventSetFlags(scrollEvent, 0);
+                CGEventPost(kCGHIDEventTap, scrollEvent);
+                CFRelease(scrollEvent);
+            }
         }
 
         // ⌘押下中はカーソル移動そのものを常にキャンセルする
